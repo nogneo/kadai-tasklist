@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
@@ -14,16 +13,16 @@ import models.Task;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class UpdateServlet
+ * Servlet implementation class DestroyServlet
  */
-@WebServlet("/update")
-public class UpdateServlet extends HttpServlet {
+@WebServlet("/destroy")
+public class DestroyServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public UpdateServlet() {
+    public DestroyServlet() {
         super();
     }
 
@@ -35,19 +34,12 @@ public class UpdateServlet extends HttpServlet {
         if(_token != null && _token.equals(request.getSession().getId())) {
             EntityManager em = DBUtil.createEntityManager();
 
-            // セッションスコープからメッセージIDを取得して
-            // 該当のIDのメッセージ1件のみをデータベースから取得
+            // セッションスコープかタスクのIDを取得して
+            // 該当のIDのタスク1件のみをデータベースから取得
             Task m = em.find(Task.class, (Integer)(request.getSession().getAttribute("task_id")));
 
-            // フォームの内容を各フィールドに上書き
-            String content = request.getParameter("content");
-            m.setContent(content);
-
-            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-            m.setUpdated_at(currentTime);
-
-            // データベースを更新
             em.getTransaction().begin();
+            em.remove(m);
             em.getTransaction().commit();
             em.close();
 
@@ -56,7 +48,6 @@ public class UpdateServlet extends HttpServlet {
 
             // indexページへリダイレクト
             response.sendRedirect(request.getContextPath() + "/index");
-
 
         }
     }
